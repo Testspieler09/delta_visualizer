@@ -2,7 +2,7 @@
 
 > [!NOTE]
 >
-> This tool is designed to work with the output of [$\Delta$](https://github.com/Testspieler09/delta).
+> This tool is designed to work with the output of [Delta](https://github.com/Testspieler09/delta) ($\Delta$).
 
 An interactive **marimo notebook** for data visualization, managed with **uv** for fast, reproducible Python environments.
 
