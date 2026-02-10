@@ -1,7 +1,11 @@
 import marimo
 
 __generated_with = "0.19.9"
-app = marimo.App(width="medium", app_title="Visualize delta results")
+app = marimo.App(
+    width="medium",
+    app_title="Visualize delta results",
+    layout_file="layouts/visualize.grid.json",
+)
 
 
 @app.cell(hide_code=True)
