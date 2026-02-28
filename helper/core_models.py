@@ -46,6 +46,7 @@ class PlotConfig:
     y_scale: Literal["linear", "log"] = "linear"
 
     memory_metric: Literal["physical", "virtual"] = "physical"
+    memory_unit: Literal["bytes", "mb"] = "mb"
 
     timeline_alignment: Literal["truncate", "interpolate", "per_run"] = "truncate"
 
