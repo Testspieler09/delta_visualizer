@@ -4,6 +4,7 @@ from plot_memory_max import plot_memory_max_group
 from plot_memory_timeline import plot_memory_timeline_group
 
 
+# FIX: this does not use the colorpalette and the label map
 def plot_group(group: Group, registry: DatasetRegistry, config: PlotConfig):
     if group.type == "time":
         return plot_time_group(group, registry, config)

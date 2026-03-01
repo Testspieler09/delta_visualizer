@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 import pandas as pd
+import matplotlib as plt
 
 
 DatasetType = Literal["time", "memory_max", "memory_timeline"]
@@ -53,9 +54,42 @@ class PlotConfig:
     palette: Dict[str, str] = field(default_factory=dict)
     label_map: Dict[str, str] = field(default_factory=dict)
 
+    save_dir: Optional[Path] = None
+
 
 @dataclass
 class AppState:
     registry: DatasetRegistry = field(default_factory=DatasetRegistry)
     groups: Dict[str, Group] = field(default_factory=dict)
     config: PlotConfig = field(default_factory=PlotConfig)
+
+    def is_valid(self) -> bool:
+        if self.registry is None or self.registry.list() == []:
+            raise ValueError(
+                "No data within registry. Please select csv files that contain data to plot somthing meaningfull."
+            )
+        if self.groups is None or self.groups == {}:
+            raise ValueError("No groups present that could be plotted")
+        if self.config is None:
+            raise ValueError("Plotconfig was not set")
+
+        return True
+
+    def plot_all(self) -> List[plt.figure.Figure]:
+        from helper.plotting.plot_dispatcher import plot_group
+
+        plots = []
+        for i, g in enumerate(self.groups.values()):
+            plot = plot_group(g, self.registry, self.config)
+            plots.append(plot)
+
+            if self.config.save_dir is not None:
+                file_path = self.config.save_dir / f"plot_{g.name}_{i}.png"
+                plot.savefig(file_path, bbox_inches="tight")
+
+        return plots
+
+    @staticmethod
+    def close_all_plots(plots: plt.figure.Figure) -> None:
+        for p in plots:
+            plt.close(p)
