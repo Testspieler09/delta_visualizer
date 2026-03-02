@@ -1,11 +1,7 @@
 import marimo
 
 __generated_with = "0.20.2"
-app = marimo.App(
-    width="columns",
-    app_title="Visualize delta results",
-    layout_file="layouts/visualize.slides.json",
-)
+app = marimo.App(width="medium", app_title="Visualize delta results")
 
 with app.setup(hide_code=True):
     import marimo as mo
@@ -239,7 +235,7 @@ def _(config_form):
     return (app_state,)
 
 
-@app.cell(column=1, hide_code=True)
+@app.cell(hide_code=True)
 def _(
     clear_btn,
     config_form,
