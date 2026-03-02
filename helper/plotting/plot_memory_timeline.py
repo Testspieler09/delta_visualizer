@@ -39,7 +39,7 @@ def plot_memory_timeline_group(group, registry, config):
                 y,
                 label=display_name,
                 color=color,
-                alpha=0.7,  # keep old non-per_run alpha
+                alpha=0.7,
             )
 
         # ----------------------------
@@ -77,7 +77,7 @@ def plot_memory_timeline_group(group, registry, config):
     ax.set_title(group.name)
     ax.set_yscale(config.y_scale)
 
-    ax.legend()
+    ax.legend(title=config.legend_title)
     fig.tight_layout()
 
     return fig

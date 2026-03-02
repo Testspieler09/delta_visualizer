@@ -4,50 +4,42 @@
     "columns": 24,
     "rowHeight": 20,
     "maxWidth": 1400,
-    "bordered": false,
+    "bordered": true,
     "cells": [
       {
         "position": null
       },
       {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
         "position": [
           0,
           0,
           24,
-          23
-        ]
-      },
-      {
-        "position": null
+          110
+        ],
+        "side": "left"
       },
       {
         "position": [
           0,
-          23,
+          110,
           24,
-          13
+          34
         ]
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
-      },
-      {
-        "position": null
       }
     ]
   }

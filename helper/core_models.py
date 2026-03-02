@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Literal, Optional
+from matplotlib.figure import Figure
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 
 DatasetType = Literal["time", "memory_max", "memory_timeline"]
@@ -52,6 +53,7 @@ class PlotConfig:
     timeline_alignment: Literal["truncate", "interpolate", "per_run"] = "truncate"
 
     palette: Dict[str, str] = field(default_factory=dict)
+    legend_title: str = "Benchmark"
     label_map: Dict[str, str] = field(default_factory=dict)
 
     save_dir: Optional[Path] = None
@@ -75,7 +77,7 @@ class AppState:
 
         return True
 
-    def plot_all(self) -> List[plt.figure.Figure]:
+    def plot_all(self) -> List[Figure]:
         from helper.plotting.plot_dispatcher import plot_group
 
         plots = []
@@ -90,6 +92,6 @@ class AppState:
         return plots
 
     @staticmethod
-    def close_all_plots(plots: plt.figure.Figure) -> None:
+    def close_all_plots(plots: Figure) -> None:
         for p in plots:
             plt.close(p)
