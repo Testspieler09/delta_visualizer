@@ -16,7 +16,7 @@ def plot_memory_timeline_group(group, registry, config):
         # no mutation
         df = dataset.raw_df.copy(deep=False)
 
-        value_col = _select_memory_column(df, config.memory_metric)
+        value_col = _select_memory_column(config.memory_metric)
 
         display_name = config.label_map.get(ds_id, dataset.display_name)
 
@@ -48,7 +48,7 @@ def plot_memory_timeline_group(group, registry, config):
         elif config.timeline_alignment == "per_run":
             first = True
 
-            for _, run_df in _per_run_data(df, value_col):
+            for _, run_df in _per_run_data(df):
                 x = run_df["timestamp_ms"].values
                 y = _convert_memory(run_df[value_col].values, config.memory_unit)
 
@@ -56,7 +56,7 @@ def plot_memory_timeline_group(group, registry, config):
                     x,
                     y,
                     color=color,
-                    alpha=0.4,  # keep old per_run alpha
+                    alpha=0.4,
                     label=display_name if first else None,
                 )
                 first = False
@@ -91,7 +91,7 @@ def _convert_memory(values, unit: str):
     raise ValueError(f"Unsupported memory_unit: {unit}")
 
 
-def _select_memory_column(df: pd.DataFrame, metric: str) -> str:
+def _select_memory_column(metric: str) -> str:
     if metric == "physical":
         return "physical_bytes"
     if metric == "virtual":
@@ -138,7 +138,7 @@ def _interpolate_alignment(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
 
     grid = np.sort(grid)
 
-    for _run_id, run_df in df.groupby("run_index"):
+    for _, run_df in df.groupby("run_index"):
         run_df = run_df.sort_values("timestamp_ms")
 
         run_df = run_df[
@@ -158,7 +158,7 @@ def _interpolate_alignment(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
     return _aggregate_mean(combined, value_col)
 
 
-def _per_run_data(df: pd.DataFrame, value_col: str):
+def _per_run_data(df: pd.DataFrame):
     for run_id, run_df in df.groupby("run_index"):
         yield run_id, run_df.sort_values("timestamp_ms")
 

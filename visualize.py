@@ -1,11 +1,12 @@
 import marimo
 
-__generated_with = "0.20.2"
+__generated_with = "0.20.4"
 app = marimo.App(width="medium", app_title="Visualize delta results")
 
 with app.setup(hide_code=True):
     import marimo as mo
     import uuid
+    from dataclasses import replace
 
     # Custom from within the project
     from helper.core_models import DatasetRegistry, PlotConfig, AppState
@@ -40,7 +41,50 @@ with app.setup(hide_code=True):
 
 
 @app.cell(hide_code=True)
-def _(dataset_table_input, groups_mgmt_table, handle_create_group):
+def _():
+    _ds_names = [_ds.display_name for _ds in registry().datasets.values()]
+    _ds_files = [str(_ds.source_path) for _ds in registry().datasets.values()]
+    _ds_ids = [_ds.id for _ds in registry().datasets.values()]
+
+    label_map_editor = mo.ui.data_editor(
+        data={"Id": _ds_ids, "Filename": _ds_files, "Plotlabel": _ds_names},
+        editable_columns=["Plotlabel"],
+        label="Label Overrides",
+    ).form(
+        on_change=lambda new_data: [
+            registry().datasets.update(
+                {id: replace(registry().get(id), display_name=label)}
+            )
+            for id, label in zip(new_data["Id"], new_data["Plotlabel"])
+        ]
+    )
+    return (label_map_editor,)
+
+
+@app.cell(hide_code=True)
+def _():
+    _ds_names = [_ds.display_name for _ds in registry().datasets.values()]
+    _ds_ids = [_ds.id for _ds in registry().datasets.values()]
+
+    color_map_editor = mo.ui.data_editor(
+        data={
+            "Id": _ds_ids,
+            "Label": _ds_names,
+            "Color (Hex)": [None for _ in range(len(_ds_names))],
+        },
+        label="Color Overrides",
+        editable_columns=["Color (Hex)"],
+    )
+    return (color_map_editor,)
+
+
+@app.cell(hide_code=True)
+def _(
+    color_map_editor,
+    dataset_table_input,
+    groups_mgmt_table,
+    handle_create_group,
+):
     # NOTE: All static (data needed already known at this point) UI elements get defined here
     csv_file_browser = mo.ui.file_browser(
         label="Select the benchmarks you want to compare",
@@ -79,6 +123,7 @@ def _(dataset_table_input, groups_mgmt_table, handle_create_group):
 
     config_form = (
         mo.md("""
+        ### General configurations (required)
         {memory_metric}
 
         {memory_unit}
@@ -87,6 +132,10 @@ def _(dataset_table_input, groups_mgmt_table, handle_create_group):
 
         {y_scale}
 
+        ### Configure the colors (optional)
+        {color_map}
+
+        ### Save plots (optional)
         {save_dir}
         """)
         .batch(
@@ -108,6 +157,7 @@ def _(dataset_table_input, groups_mgmt_table, handle_create_group):
                 options=["linear", "log"],
                 value="linear",
             ),
+            color_map=color_map_editor,
             save_dir=mo.ui.file_browser(
                 label="Select a directory to save the plots to (optional) [If none selected the plots will not get saved automatically]",
                 multiple=False,
@@ -130,7 +180,10 @@ def _(dataset_table_input, groups_mgmt_table, handle_create_group):
 
 
 @app.cell(hide_code=True)
-def _():
+def _(label_map_editor):
+    # NOTE: this ensures that we have a reactive state
+    label_map_editor.value
+
     options = {
         f"{ds.display_name} ({ds.type})": ds.id for ds in registry().datasets.values()
     }
@@ -222,13 +275,18 @@ def _(config_form):
     config = None
 
     if config_form.value:
-        # TODO: add the missing configuration options when the notebook structure allows it
-        # for example impl see: 87df64d
+        _color_data = config_form.value["color_map"]
+        final_color_map = {
+            id: color
+            for id, color in zip(_color_data["Id"], _color_data["Color (Hex)"])
+        }
+
         config = PlotConfig(
             memory_metric=config_form.value["memory_metric"],
             memory_unit=config_form.value["memory_unit"],
             timeline_alignment=config_form.value["timeline_alignment"],
             y_scale=config_form.value["y_scale"],
+            palette=final_color_map,
         )
 
     app_state = AppState(registry=registry(), groups=groups(), config=config)
@@ -243,12 +301,15 @@ def _(
     csv_file_browser,
     delete_btn,
     groups_mgmt_table,
+    label_map_editor,
 ):
     mo.vstack(
         [
             mo.md("### Load Benchdata"),
             csv_file_browser,
             loading_callout(),
+            mo.md("### Rename labels"),
+            label_map_editor,
             mo.md("### Create plot groups"),
             creation_section,
             group_creation_callout(),
